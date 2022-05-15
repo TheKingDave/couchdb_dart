@@ -1,4 +1,11 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
+
+final jsonHeader = ContentType.json.toString();
+final Map<String, String> jsonHeaders = {
+  HttpHeaders.contentTypeHeader: jsonHeader
+};
 
 /// Returns a copy of [original] with the given [body].
 http.Request _copyNormalRequest(http.Request original) {

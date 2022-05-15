@@ -1,15 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:couchdb_dart/src/authentication/base_auth.dart';
-import 'package:couchdb_dart/src/authentication/utils.dart';
+import 'package:couchdb_dart/src/utils.dart';
 import 'package:http/http.dart' as http;
 
 class CookieAuth extends BaseAuthentication {
-  final String _username;
-  final String _password;
+  final String _authBody;
 
-  CookieAuth(this._username, this._password);
+  CookieAuth(String username, String password)
+      : _authBody = json.encode({'name': username, 'password': password});
 
   @override
   http.BaseClient getClient(http.Client parent, Uri baseUri) {
@@ -47,7 +46,6 @@ class _CookieAuthClient extends http.BaseClient {
       }
     }
     if (response.headers['set-cookie'] != null) {
-      print('set-cookie in normal request');
       _cookie = response.headers['set-cookie'];
     }
 
@@ -55,14 +53,10 @@ class _CookieAuthClient extends http.BaseClient {
   }
 
   Future<void> authenticate() async {
-    print('AUTHENTICATE');
     final authRequest = http.Request('POST', _baseUri.resolve('/_session'));
 
-    authRequest.headers[HttpHeaders.contentTypeHeader] =
-        ContentType.json.toString();
-    authRequest.persistentConnection = true;
-    authRequest.body =
-        json.encode({'name': _auth._username, 'password': _auth._password});
+    authRequest.headers.addAll(jsonHeaders);
+    authRequest.body = _auth._authBody;
 
     http.BaseResponse authResponse = await _inner.send(authRequest);
     if (authResponse.statusCode != 200) {
