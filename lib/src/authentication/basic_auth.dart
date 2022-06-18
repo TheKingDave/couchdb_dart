@@ -33,4 +33,9 @@ class _BasicAuthClient extends http.BaseClient {
     request.headers['Authorization'] = _basicAuth._credentials;
     return _inner.send(request);
   }
+  
+  @override
+  void close() {
+    _inner.close();
+  }
 }

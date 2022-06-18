@@ -76,22 +76,23 @@ class CouchDbClient {
 
     final res = await _client.put(connectUri.resolve(path),
         headers: headers, body: encodedData);
-    
-    
-    if(ContentType.parse(res.headers['content-type']!).mimeType != ContentType.json.mimeType) {
-      throw Exception('Responses with content-type other than json are not supported');
+
+    if (ContentType.parse(res.headers['content-type']!).mimeType !=
+        ContentType.json.mimeType) {
+      throw Exception(
+          'Responses with content-type other than json are not supported');
     }
 
     final resBody = jsonDecode(res.body);
-    Map<String, Object> json = resBody is List ? {'list': resBody} : Map.from(resBody);
+    Map<String, Object> json =
+        resBody is List ? {'list': resBody} : Map.from(resBody);
     _checkForErrorCode(res.statusCode, json);
-    
+
     return ApiResponse(json, res.headers);
   }
 
   Future<ApiResponse> post(String path,
       {Object? data, Map<String, String> headers = const {}}) async {
-
     Object? encodedData;
     if (data != null) {
       encodedData = data is Map ? jsonEncode(data) : data;
@@ -126,5 +127,9 @@ class CouchDbClient {
       return;
     }
     throw ErrorResponse.fromJson(data);
+  }
+  
+  void close() {
+    _client.close();
   }
 }

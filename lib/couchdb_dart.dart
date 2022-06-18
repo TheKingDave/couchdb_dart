@@ -6,7 +6,4 @@ library couchdb_dart;
 export 'src/client.dart';
 export 'src/database.dart';
 
-export 'src/authentication/base_auth.dart';
-export 'src/authentication/basic_auth.dart';
-export 'src/authentication/cookie_auth.dart';
-export 'src/authentication/proxy_auth.dart';
+export 'src/authentication/authentication.dart';

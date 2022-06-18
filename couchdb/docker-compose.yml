@@ -2,13 +2,10 @@ version: '3.8'
 
 services:
   couchdb_dart:
-    image: couchdb:3.2.2
+    image: couchdb:latest
     container_name: couchdb
     ports:
       - '5984:5984'
     volumes:
       - ./data:/opt/couchdb/data/
       - ./config:/opt/couchdb/etc/local.d/
-    environment:
-      - 'COUCHDB_USER=test'
-      - 'COUCHDB_PASSWORD=test'

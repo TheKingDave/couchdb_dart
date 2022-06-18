@@ -68,4 +68,9 @@ class _CookieAuthClient extends http.BaseClient {
 
     _cookie = authResponse.headers['set-cookie'];
   }
+  
+  @override
+  void close() {
+    _inner.close();
+  }
 }
