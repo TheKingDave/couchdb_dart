@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:couchdb_dart/src/authentication/base_auth.dart';
+import 'package:couchdb_dart/couchdb_dart.dart';
 import 'package:couchdb_dart/src/utils.dart';
 import 'package:http/http.dart' as http;
 
@@ -60,7 +60,7 @@ class _CookieAuthClient extends http.BaseClient {
 
     http.BaseResponse authResponse = await _inner.send(authRequest);
     if (authResponse.statusCode != 200) {
-      throw ArgumentError('Username and Password not recognized by server');
+      throw AuthenticationError('Username and Password not recognized by server');
     }
     if (authResponse.headers['set-cookie'] == null) {
       throw Exception('No "set-cookie" header received from server');
