@@ -1,14 +1,13 @@
 import 'dart:convert';
 
 import 'package:couchdb_dart/src/authentication/base_auth.dart';
-import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 class BasicAuth extends BaseAuthentication {
   late final String _credentials;
 
   BasicAuth(String username, [String password = '']) {
-    _credentials = 'Basic ' + Base64Encoder().convert('$username:$password'.codeUnits);
+    _credentials = 'Basic ${Base64Encoder().convert('$username:$password'.codeUnits)}';
   }
   
   factory BasicAuth.fromUserInfo(String userInfo) {

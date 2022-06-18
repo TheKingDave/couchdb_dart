@@ -7,3 +7,4 @@ export 'src/client.dart';
 export 'src/database.dart';
 
 export 'src/authentication/authentication.dart';
+export 'src/response/response.dart';

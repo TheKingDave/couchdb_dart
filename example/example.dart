@@ -15,8 +15,12 @@ void main(List<String> args) async {
 
   final database = Database(client, 'test_db');
   
-  await database.create();
-  print((await database.info()).body.trim());
+  if(await database.exists()) {
+    await database.delete();
+    print('Database existed, deleted it');
+  }
+  await database.create(partitioned: true);
+  print((await database.info()).data);
   await database.delete();
   client.close();
 }

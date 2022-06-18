@@ -1,14 +1,18 @@
 class ErrorResponse {
-  String error;
-  String reason;
+  String message;
 
-  ErrorResponse(this.error, this.reason);
-
-  ErrorResponse.fromJson(Map<String, dynamic> json)
-      : this(json['error'] as String, json['reason'] as String);
+  ErrorResponse(this.message);
 
   @override
   String toString() {
-    return 'ErrorResponse{error: $error, reason: $reason}';
+    return 'ErrorResponse{$message}';
   }
+}
+
+class JsonErrorResponse extends ErrorResponse {
+  JsonErrorResponse(String error, String reason)
+      : super('error: $error, reason: $reason');
+
+  JsonErrorResponse.fromJson(Map<String, dynamic> json)
+      : this(json['error'] as String, json['reason'] as String);
 }

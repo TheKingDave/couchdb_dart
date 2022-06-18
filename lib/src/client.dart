@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:couchdb_dart/couchdb_dart.dart';
-import 'package:couchdb_dart/src/response/api_response.dart';
-import 'package:couchdb_dart/src/response/error_response.dart';
 import 'package:couchdb_dart/src/utils.dart';
 import 'package:http/http.dart' as http;
 
@@ -56,15 +54,38 @@ class CouchDbClient {
         cors);
   }
 
-  Future<http.Response> head(String path, {Map<String, String>? headers}) {
-    return _client.head(connectUri.resolve(path), headers: headers);
+  Future<ApiResponse> head(String path, {Map<String, String>? headers}) async {
+    final res = await _client.head(_generateUri(path), headers: headers);
+    if(_isErrorCode(res.statusCode)) {
+      throw ErrorResponse('${res.statusCode}');
+    }
+    return ApiResponse({}, res.headers);
   }
 
-  Future<http.Response> get(String path, {Map<String, String>? headers}) {
-    return _client.get(connectUri.resolve(path), headers: headers);
+  Future<ApiResponse> get(String path, {Map<String, String>? headers}) async {
+    final res = await _client.get(_generateUri(path), headers: headers);
+
+    return _generateApiResponse(res);
   }
 
   Future<ApiResponse> put(String path,
+      {Object? data,
+      Map<String, String> headers = const {},
+      Map<String, String> query = const {}}) async {
+    
+    Object? encodedData = data;
+    if (data is Map) {
+      encodedData = jsonEncode(data);
+      headers.addAll(jsonHeaders);
+    }
+
+    final res = await _client.put(_generateUri(path, query),
+        headers: headers, body: encodedData);
+
+    return _generateApiResponse(res);
+  }
+
+  Future<ApiResponse> post(String path,
       {Object? data, Map<String, String> headers = const {}}) async {
     Object? encodedData;
     if (data != null) {
@@ -74,9 +95,34 @@ class CouchDbClient {
       }
     }
 
-    final res = await _client.put(connectUri.resolve(path),
+    final res = await _client.post(_generateUri(path),
         headers: headers, body: encodedData);
 
+    return _generateApiResponse(res);
+  }
+
+  Future<ApiResponse> delete(String path,
+      {Map<String, String>? headers}) async {
+    final res =
+        await _client.delete(_generateUri(path), headers: headers);
+
+    return _generateApiResponse(res);
+  }
+
+  Future<http.Response> copy(String path,
+      {Map<String, String>? headers}) async {
+    final request = http.Request('COPY', connectUri.resolve(path));
+    if (headers != null) request.headers.addAll(headers);
+    return http.Response.fromStream(await _client.send(request));
+  }
+  
+  Uri _generateUri(String path, [Map<String, String>? query]) {
+    Uri ret = connectUri.resolve(path);
+    if(query != null) ret = ret.replace(queryParameters: query);
+    return ret;
+  }
+
+  ApiResponse _generateApiResponse(http.Response res) {
     if (ContentType.parse(res.headers['content-type']!).mimeType !=
         ContentType.json.mimeType) {
       throw Exception(
@@ -90,45 +136,17 @@ class CouchDbClient {
 
     return ApiResponse(json, res.headers);
   }
-
-  Future<ApiResponse> post(String path,
-      {Object? data, Map<String, String> headers = const {}}) async {
-    Object? encodedData;
-    if (data != null) {
-      encodedData = data is Map ? jsonEncode(data) : data;
-      if (data is Map) {
-        headers.addAll(jsonHeaders);
-      }
-    }
-
-    final res = await _client.post(connectUri.resolve(path),
-        headers: headers, body: encodedData);
-
-    final resBody = jsonDecode(res.body);
-    Map<String, Object> json = resBody is List ? {'list': resBody} : resBody;
-    _checkForErrorCode(res.statusCode, json);
-
-    return ApiResponse(json, res.headers);
-  }
-
-  Future<http.Response> delete(String path, {Map<String, String>? headers}) {
-    return _client.delete(connectUri.resolve(path), headers: headers);
-  }
-
-  Future<http.Response> copy(String path,
-      {Map<String, String>? headers}) async {
-    final request = http.Request('COPY', connectUri.resolve(path));
-    if (headers != null) request.headers.addAll(headers);
-    return http.Response.fromStream(await _client.send(request));
+  
+  bool _isErrorCode(int code) {
+    return !(code >= 200 && code <= 202);
   }
 
   void _checkForErrorCode(int code, Map<String, dynamic> data) {
-    if (code >= 200 && code <= 202) {
-      return;
+    if (_isErrorCode(code)) {
+      throw JsonErrorResponse.fromJson(data);
     }
-    throw ErrorResponse.fromJson(data);
   }
-  
+
   void close() {
     _client.close();
   }
