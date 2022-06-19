@@ -17,8 +17,36 @@ class Database {
     return true;
   }
 
-  Future<ApiResponse> info() {
-    return _client.get(database);
+  Future<Json> info() async {
+    return (await _client.get(database)).data;
+  }
+
+  Future<Document> document(String id,
+      {String? rev,
+      bool? attachments,
+      bool? attEncodingInfo,
+      bool? conflicts,
+      bool? deletedConflicts,
+      bool? latest,
+      bool? localSeq,
+      bool? meta,
+      bool? revs,
+      bool? revsInfo}) async {
+    final query = <String, String>{
+      if (rev != null) 'rev': rev,
+      if (attachments != null) 'attachments': '$attachments',
+      if (attEncodingInfo != null) 'att_encoding_info': '$attEncodingInfo',
+      if (conflicts != null) 'conflicts': '$conflicts',
+      if (deletedConflicts != null) 'deleted_conflicts': '$deletedConflicts',
+      if (latest != null) 'latest': '$latest',
+      if (localSeq != null) 'local_seq': '$localSeq',
+      if (meta != null) 'meta': '$meta',
+      if (revs != null) 'revs': '$revs',
+      if (revsInfo != null) 'revs_info': '$revsInfo',
+    };
+
+    final res = await _client.get('$database/$id', query: query);
+    return Document.fromJson(res.data, this);
   }
 
   Future<void> create({int? q, int? n, bool? partitioned}) async {

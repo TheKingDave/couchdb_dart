@@ -17,9 +17,7 @@ class Document {
   }
 
   void _setData(Json? data) {
-    _data = data
-      ?..remove('_id')
-      ..remove('_rev');
+    _data = data?..remove('_id')..remove('_rev');
   }
 
   Document._(this.id, this.rev, this._database, [Json? data]) {
@@ -34,7 +32,7 @@ class Document {
 
   Future<void> getLatest() async {
     final res = await _database.getDocument(id);
-    rev = res.data['rev'];
+    rev = res.data['_rev'];
     _setData(res.data);
   }
 
