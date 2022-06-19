@@ -54,28 +54,32 @@ class CouchDbClient {
         cors);
   }
 
-  Future<ApiResponse> head(String path, {Map<String, String>? headers}) async {
-    final res = await _client.head(_generateUri(path), headers: headers);
-    if(_isErrorCode(res.statusCode)) {
+  Future<ApiResponse> head(String path,
+      {Map<String, String>? headers,
+      Map<String, String> query = const {}}) async {
+    final res = await _client.head(_generateUri(path, query), headers: headers);
+    if (_isErrorCode(res.statusCode)) {
       throw ErrorResponse('${res.statusCode}');
     }
     return ApiResponse({}, res.headers);
   }
 
-  Future<ApiResponse> get(String path, {Map<String, String>? headers}) async {
-    final res = await _client.get(_generateUri(path), headers: headers);
+  Future<ApiResponse> get(String path,
+      {Map<String, String>? headers,
+      Map<String, String> query = const {}}) async {
+    final res = await _client.get(_generateUri(path, query), headers: headers);
 
     return _generateApiResponse(res);
   }
 
   Future<ApiResponse> put(String path,
       {Object? data,
-      Map<String, String> headers = const {},
+      Map<String, String>? headers,
       Map<String, String> query = const {}}) async {
-    
     Object? encodedData = data;
     if (data is Map) {
       encodedData = jsonEncode(data);
+      headers ??= {};
       headers.addAll(jsonHeaders);
     }
 
@@ -86,39 +90,43 @@ class CouchDbClient {
   }
 
   Future<ApiResponse> post(String path,
-      {Object? data, Map<String, String> headers = const {}}) async {
-    Object? encodedData;
-    if (data != null) {
-      encodedData = data is Map ? jsonEncode(data) : data;
-      if (data is Map) {
-        headers.addAll(jsonHeaders);
-      }
+      {Object? data,
+      Map<String, String>? headers,
+      Map<String, String> query = const {}}) async {
+    Object? encodedData = data;
+
+    if (data is Map) {
+      encodedData = jsonEncode(data);
+      headers ??= {};
+      headers.addAll(jsonHeaders);
     }
 
-    final res = await _client.post(_generateUri(path),
+    final res = await _client.post(_generateUri(path, query),
         headers: headers, body: encodedData);
 
     return _generateApiResponse(res);
   }
 
   Future<ApiResponse> delete(String path,
-      {Map<String, String>? headers}) async {
+      {Map<String, String>? headers,
+      Map<String, String> query = const {}}) async {
     final res =
-        await _client.delete(_generateUri(path), headers: headers);
+        await _client.delete(_generateUri(path, query), headers: headers);
 
     return _generateApiResponse(res);
   }
 
   Future<http.Response> copy(String path,
-      {Map<String, String>? headers}) async {
-    final request = http.Request('COPY', connectUri.resolve(path));
+      {Map<String, String>? headers,
+      Map<String, String> query = const {}}) async {
+    final request = http.Request('COPY', _generateUri(path, query));
     if (headers != null) request.headers.addAll(headers);
     return http.Response.fromStream(await _client.send(request));
   }
-  
+
   Uri _generateUri(String path, [Map<String, String>? query]) {
     Uri ret = connectUri.resolve(path);
-    if(query != null) ret = ret.replace(queryParameters: query);
+    if (query != null) ret = ret.replace(queryParameters: query);
     return ret;
   }
 
@@ -136,12 +144,12 @@ class CouchDbClient {
 
     return ApiResponse(json, res.headers);
   }
-  
+
   bool _isErrorCode(int code) {
     return !(code >= 200 && code <= 202);
   }
 
-  void _checkForErrorCode(int code, Map<String, dynamic> data) {
+  void _checkForErrorCode(int code, Json data) {
     if (_isErrorCode(code)) {
       throw JsonErrorResponse.fromJson(data);
     }
