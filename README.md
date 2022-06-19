@@ -31,3 +31,13 @@ client.close();
 ## Additional information
 
 This package is a small abstraction above the CouchDB.
+
+## Testing
+
+For testing or development you can start the CouchDB instance defined in the couchdb directory with [Docker](https://www.docker.com/)
+
+```bash
+cd couchdb && docker-compose up
+```
+
+This includes predefined admin user (test:test) and required auth handlers enabled
