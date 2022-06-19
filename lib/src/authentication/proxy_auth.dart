@@ -4,6 +4,7 @@ import 'package:couchdb_dart/src/authentication/base_auth.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
+/// Implements proxy authentication
 class ProxyAuth extends BaseAuthentication {
   final Map<String, String> _headers = {};
 

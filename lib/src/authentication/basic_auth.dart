@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:couchdb_dart/src/authentication/base_auth.dart';
 import 'package:http/http.dart' as http;
 
+/// Implements an basic authentication strategy
 class BasicAuth extends BaseAuthentication {
   late final String _credentials;
 

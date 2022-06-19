@@ -4,6 +4,11 @@ import 'package:couchdb_dart/couchdb_dart.dart';
 import 'package:couchdb_dart/src/utils/utils.dart';
 import 'package:http/http.dart' as http;
 
+/// Implements cookie authentication
+/// 
+/// Automatically authenticates to the server to get a cookie
+/// If the cookie timeout is reached, get a new cookie
+/// If this failed twice in a row, throw an error
 class CookieAuth extends BaseAuthentication {
   final String _authBody;
 
