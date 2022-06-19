@@ -2,26 +2,33 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:couchdb_dart/couchdb_dart.dart';
-import 'package:couchdb_dart/src/utils.dart';
+import 'package:couchdb_dart/src/utils/utils.dart';
 import 'package:http/http.dart' as http;
 
+/// This is the underlying client used by other abstractions (Database, Document)
+///
+/// All request can be added with headers and query parameters
+/// All request made through this client are prefixed with the Uri (baseUri)
+/// All responses are checked for error codes and throws an `ErrorResponse`
+/// All responses are mapped to `ApiResponse`
 class CouchDbClient {
   late final Uri connectUri;
   late final http.Client _client;
   final bool cors;
 
   CouchDbClient._fromUri(
-      this.connectUri, BaseAuthentication authentication, this.cors) {
-    _client = authentication.getClient(http.Client(), connectUri);
+      this.connectUri, BaseAuthentication? authentication, this.cors) {
+    _client = (authentication ?? NoAuth()).getClient(http.Client(), connectUri);
   }
 
+  /// Creates a client from specified uri parts
   factory CouchDbClient({
     String scheme = 'https',
     String host = '0.0.0.0',
     int port = 5984,
     String path = '',
     bool cors = true,
-    required BaseAuthentication authentication,
+    BaseAuthentication? authentication,
   }) =>
       CouchDbClient._fromUri(
           Uri(
@@ -33,15 +40,15 @@ class CouchDbClient {
           authentication,
           cors);
 
+  /// Creates a client from a specified uri
+  ///
+  /// If no authentication is supplied ans userinfo is supplied uses basic auth
   factory CouchDbClient.fromUri(
     Uri uri, {
     bool cors = true,
     BaseAuthentication? authentication,
   }) {
-    if (authentication == null) {
-      if (uri.userInfo == '') {
-        throw Exception('If not authentication is given, userInfo must be set');
-      }
+    if (authentication == null && uri.userInfo.isNotEmpty) {
       authentication = BasicAuth.fromUserInfo(uri.userInfo);
     }
 
@@ -54,9 +61,9 @@ class CouchDbClient {
         cors);
   }
 
+  /// Makes a `HEAD` request
   Future<ApiResponse> head(String path,
-      {Map<String, String>? headers,
-      Map<String, String> query = const {}}) async {
+      {Map<String, String>? headers, Map<String, String>? query}) async {
     final res = await _client.head(_generateUri(path, query), headers: headers);
     if (_isErrorCode(res.statusCode)) {
       throw ErrorResponse('${res.statusCode}');
@@ -64,18 +71,19 @@ class CouchDbClient {
     return ApiResponse({}, res.headers);
   }
 
+  /// Makes a `GET` request
   Future<ApiResponse> get(String path,
-      {Map<String, String>? headers,
-      Map<String, String> query = const {}}) async {
+      {Map<String, String>? headers, Map<String, String>? query}) async {
     final res = await _client.get(_generateUri(path, query), headers: headers);
 
     return _generateApiResponse(res);
   }
 
+  /// Makes a `PUT` request
   Future<ApiResponse> put(String path,
       {Object? data,
       Map<String, String>? headers,
-      Map<String, String> query = const {}}) async {
+      Map<String, String>? query}) async {
     Object? encodedData = data;
     if (data is Map) {
       encodedData = jsonEncode(data);
@@ -89,10 +97,11 @@ class CouchDbClient {
     return _generateApiResponse(res);
   }
 
+  /// Makes a `POST` request
   Future<ApiResponse> post(String path,
       {Object? data,
       Map<String, String>? headers,
-      Map<String, String> query = const {}}) async {
+      Map<String, String>? query}) async {
     Object? encodedData = data;
 
     if (data is Map) {
@@ -107,21 +116,21 @@ class CouchDbClient {
     return _generateApiResponse(res);
   }
 
+  /// Makes a `DELETE` request
   Future<ApiResponse> delete(String path,
-      {Map<String, String>? headers,
-      Map<String, String> query = const {}}) async {
+      {Map<String, String>? headers, Map<String, String>? query}) async {
     final res =
         await _client.delete(_generateUri(path, query), headers: headers);
 
     return _generateApiResponse(res);
   }
 
+  /// Makes a `COPY` request
   Future<ApiResponse> copy(String path,
-      {Map<String, String>? headers,
-      Map<String, String> query = const {}}) async {
+      {Map<String, String>? headers, Map<String, String>? query}) async {
     final request = http.Request('COPY', _generateUri(path, query));
     if (headers != null) request.headers.addAll(headers);
-    
+
     final res = await http.Response.fromStream(await _client.send(request));
     return _generateApiResponse(res);
   }
@@ -157,6 +166,9 @@ class CouchDbClient {
     }
   }
 
+  /// Closes the client
+  ///
+  /// please call on end of program
   void close() {
     _client.close();
   }

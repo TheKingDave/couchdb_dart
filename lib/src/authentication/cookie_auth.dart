@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:couchdb_dart/couchdb_dart.dart';
-import 'package:couchdb_dart/src/utils.dart';
+import 'package:couchdb_dart/src/utils/utils.dart';
 import 'package:http/http.dart' as http;
 
 class CookieAuth extends BaseAuthentication {
