@@ -116,12 +116,14 @@ class CouchDbClient {
     return _generateApiResponse(res);
   }
 
-  Future<http.Response> copy(String path,
+  Future<ApiResponse> copy(String path,
       {Map<String, String>? headers,
       Map<String, String> query = const {}}) async {
     final request = http.Request('COPY', _generateUri(path, query));
     if (headers != null) request.headers.addAll(headers);
-    return http.Response.fromStream(await _client.send(request));
+    
+    final res = await http.Response.fromStream(await _client.send(request));
+    return _generateApiResponse(res);
   }
 
   Uri _generateUri(String path, [Map<String, String>? query]) {
