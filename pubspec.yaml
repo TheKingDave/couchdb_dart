@@ -1,5 +1,5 @@
 name: couchdb_dart
-description: A starting point for Dart libraries or applications.
+description: A small simple package to make it easier to use a CouchDB server
 version: 1.0.0
 repository: https://github.com/TheKingDave/couchdb_dart
 
