@@ -5,7 +5,7 @@ import 'package:couchdb_dart/src/utils/utils.dart';
 import 'package:http/http.dart' as http;
 
 /// Implements cookie authentication
-/// 
+///
 /// Automatically authenticates to the server to get a cookie
 /// If the cookie timeout is reached, get a new cookie
 /// If this failed twice in a row, throw an error
@@ -65,7 +65,8 @@ class _CookieAuthClient extends http.BaseClient {
 
     http.BaseResponse authResponse = await _inner.send(authRequest);
     if (authResponse.statusCode != 200) {
-      throw AuthenticationError('Username and Password not recognized by server');
+      throw AuthenticationError(
+          'Username and Password not recognized by server');
     }
     if (authResponse.headers['set-cookie'] == null) {
       throw Exception('No "set-cookie" header received from server');
@@ -73,7 +74,7 @@ class _CookieAuthClient extends http.BaseClient {
 
     _cookie = authResponse.headers['set-cookie'];
   }
-  
+
   @override
   void close() {
     _inner.close();

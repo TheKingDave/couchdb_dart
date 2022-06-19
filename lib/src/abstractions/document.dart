@@ -8,7 +8,7 @@ class Document {
   Json? _data;
 
   /// Gets the data, if not locally available fetches it from the server
-  /// 
+  ///
   /// https://docs.couchdb.org/en/stable/api/document/common.html#get--db-docid
   Future<Json> get data async {
     return _data ?? await _getDocument();
@@ -21,7 +21,9 @@ class Document {
   }
 
   void _setData(Json? data) {
-    _data = data?..remove('_id')..remove('_rev');
+    _data = data
+      ?..remove('_id')
+      ..remove('_rev');
   }
 
   Document._(this.id, this.rev, this._database, [Json? data]) {
@@ -35,7 +37,7 @@ class Document {
       : this._(json['id'], json['rev'], database, data);
 
   /// Gets the latest version from the server
-  /// 
+  ///
   /// https://docs.couchdb.org/en/stable/api/document/common.html#get--db-docid
   Future<void> getLatest() async {
     final res = await _database.getDocument(id);
@@ -44,7 +46,7 @@ class Document {
   }
 
   /// Updates the local and remote document
-  /// 
+  ///
   /// https://docs.couchdb.org/en/stable/api/document/common.html#put--db-docid
   Future<void> update(Json data, {bool? batch}) async {
     final res = await _database.updateDocument(id, rev, data, batch: batch);
@@ -53,14 +55,14 @@ class Document {
   }
 
   /// Deletes this document from the server
-  /// 
+  ///
   /// https://docs.couchdb.org/en/stable/api/document/common.html#delete--db-docid
   Future<void> delete({bool? batch}) async {
     await _database.deleteDocument(id, rev, batch: batch);
   }
 
   /// Copy this document
-  /// 
+  ///
   /// https://docs.couchdb.org/en/stable/api/document/common.html#copy--db-docid
   Future<Document> copy(String id, {String? rev, bool? batch}) async {
     final res = await _database.copyDocument(this.id, id,

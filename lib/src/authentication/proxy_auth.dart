@@ -42,7 +42,7 @@ class _ProxyAuthClient extends http.BaseClient {
     request.headers.addAll(_auth._headers);
     return _inner.send(request);
   }
-  
+
   @override
   void close() {
     _inner.close();
