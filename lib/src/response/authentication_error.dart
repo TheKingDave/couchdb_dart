@@ -1,5 +1,5 @@
 class AuthenticationError {
-  String message;
+  final String message;
 
   AuthenticationError(this.message);
 

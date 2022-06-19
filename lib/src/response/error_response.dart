@@ -1,5 +1,7 @@
+import 'package:couchdb_dart/couchdb_dart.dart';
+
 class ErrorResponse {
-  String message;
+  final String message;
 
   ErrorResponse(this.message);
 
@@ -13,6 +15,6 @@ class JsonErrorResponse extends ErrorResponse {
   JsonErrorResponse(String error, String reason)
       : super('error: $error, reason: $reason');
 
-  JsonErrorResponse.fromJson(Map<String, dynamic> json)
+  JsonErrorResponse.fromJson(Json json)
       : this(json['error'] as String, json['reason'] as String);
 }

@@ -1,5 +1,7 @@
+import 'package:couchdb_dart/couchdb_dart.dart';
+
 class ApiResponse {
-  final Map<String, dynamic> data;
+  final Json data;
   final Map<String, String> headers;
 
   ApiResponse(this.data, this.headers);
